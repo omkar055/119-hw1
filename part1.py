@@ -96,10 +96,9 @@ def load_input():
     # Fill out this part. You can use column access to get only the
     # columns we are interested in using the NEW_COLUMNS variable above.
     # Make sure you return the columns in the new order.
-    # TODO
-
-    # When you are done, remove the next line...
-    raise NotImplementedError
+    df_2019 = df_2019[NEW_COLUMNS]
+    df_2020 = df_2020[NEW_COLUMNS]
+    df_2021 = df_2021[NEW_COLUMNS]
 
     # ...and keep this line to return the dataframes.
     return [df_2019, df_2020, df_2021]
@@ -138,7 +137,13 @@ def q2(dfs):
     # - the number of rows
     # - the number of columns
     # - the columns are listed in the correct order
-    raise NotImplementedError
+    for df in dfs:
+        if df.shape != dfs[0].shape: # shape checks the number of rows and columns
+            return False
+        if df.columns.tolist() != NEW_COLUMNS: # columns order checks
+            return False
+    return True
+
 
 """
 ===== Interlude: Checking your output so far =====
@@ -179,7 +184,13 @@ def q3(dfs):
     # - that the set of university names in each year is the same
     # Return:
     # - True if they are the same, and False otherwise.
-    raise NotImplementedError
+    universities_2019 = set(dfs[0]['university'])
+
+    for df in dfs[1:]:
+        if set(df['university']) != universities_2019:
+            return False
+    
+    return True 
 
 """
 3b (commentary).
@@ -187,6 +198,18 @@ Did the checks pass or fail?
 Comment below and explain why.
 
 === ANSWER Q3b BELOW ===
+
+The check returned false because the sets don't match to each other, 
+due to there being newer universities being added or even older 
+universities removed. We can run some checks by doing set subtraction
+to confirm added or removed universities. 
+
+unis_2020 = set(dfs[1]['university'])
+unis_2021 = set(dfs[2]['university'])
+
+print("Only in 2019:", unis_2019 - unis_2020 - unis_2021)
+print("Only in 2020:", unis_2020 - unis_2019 - unis_2021)
+print("Only in 2021:", unis_2021 - unis_2019 - unis_2020)
 
 === END OF Q3b ANSWER ===
 """
@@ -215,10 +238,13 @@ Hint:
 def q4(dfs):
     # Sample 5 rows from each dataframe
     # Print out the samples
-    raise NotImplementedError
+    for i, df in enumerate(dfs):
+        samples = df.sample(5)
+        if i == 2:
+            sample_universities = samples['university'].tolist()
 
     # Answer as a list of 5 university names
-    return []
+    return sample_universities
 
 """
 Once you have implemented this part,
@@ -230,13 +256,14 @@ and 3 weaknesses of this dataset.
 
 === ANSWER Q4b BELOW ===
 Strengths:
-1.
-2.
+1. Multiple columns/attributes allow for analysis of various metrics.
+2. Data is relatively clean and consistent allowing for analysis of trends over time. 
 
 Weaknesses:
-1.
-2.
-3.
+1. Inconsistent sets may limit analysis of specific universities during different years.
+2. Only 3 years of data limits the long term trends analysis.
+3. Limited data points or rows per year, only ~100 top universities.
+
 === END OF Q4b ANSWER ===
 """
 
@@ -261,17 +288,22 @@ Example: if there are 5 non-null values in the first column, 3 in the second, 4 
 """
 
 def q5a(dfs):
-    # TODO
-    raise NotImplementedError
+    dfs[2].info()
     # Remember to return the list here
     # (Since .info() does not return any values,
     # for this part, you will need to copy and paste
     # the output as a hardcoded list.)
+    return [100, 100, 100, 100, 100, 100, 100, 100]
+
 
 def q5b(dfs):
-    # TODO
-    raise NotImplementedError
+    non_null_counts = []
+
+    for col in dfs[2].columns:
+        non_null_counts.append(dfs[2][col].count())
+
     # Remember to return the list here
+    return non_null_counts
 
 """
 5c.
@@ -281,9 +313,8 @@ We will use this in the unit tests below.
 """
 
 def q5c():
-    raise NotImplementedError
     # TODO: fill this in with the expected number
-    num_non_null = 0
+    num_non_null = 100
     return num_non_null
 
 """
@@ -312,29 +343,25 @@ from each unit test (function beginning with `test_`).
 Then, run `pytest part1.py` in the terminal.
 """
 
-@pytest.mark.skip
 def test_q1():
     dfs = load_input()
     assert len(dfs) == 3
     assert all([isinstance(df, pd.DataFrame) for df in dfs])
 
-@pytest.mark.skip
 def test_q2():
     dfs = load_input()
     assert q2(dfs)
 
-@pytest.mark.skip
+@pytest.mark.xfail
 def test_q3():
     dfs = load_input()
     assert q3(dfs)
 
-@pytest.mark.skip
 def test_q4():
     dfs = load_input()
     samples = q4(dfs)
     assert len(samples) == 5
 
-@pytest.mark.skip
 def test_q5():
     dfs = load_input()
     answers = q5a(dfs) + q5b(dfs)
@@ -347,14 +374,14 @@ def test_q5():
 6a. Are there any tests which fail?
 
 === ANSWER Q6a BELOW ===
-
+Yes, test_q3 fails, I think because it expects the q3 function to return True but the sets turned out to be inconsistent.
 === END OF Q6a ANSWER ===
 
 6b. For each test that fails, is it because your code
 is wrong or because the test is wrong?
 
 === ANSWER Q6b BELOW ===
-
+I think it is because the test is wrong, because for some reason it expects the 3 sets to be consistent when in reality they are not.
 === END OF Q6b ANSWER ===
 
 IMPORTANT: for any failing tests, if you think you have
@@ -371,8 +398,7 @@ Please include expected failures (@pytest.mark.xfail).
 """
 
 def q6c():
-    # TODO
-    raise NotImplementedError
+    return 1
 
 """
 ===== End of interlude =====
@@ -389,9 +415,14 @@ As your answer to this part, return the number of columns in each dataframe afte
 """
 
 def q7(dfs):
-    # TODO
-    raise NotImplementedError
-    # Remember to return the list here
+    years = [2019, 2020, 2021]
+    num_columns = []
+    for y, df in enumerate(dfs):
+        df["year"] = years[y]
+        num_columns.append(len(df.columns))
+
+    return num_columns 
+
 
 """
 8a.
@@ -401,17 +432,30 @@ As your answer, return the count for "USA" in 2021.
 """
 
 def q8a(dfs):
-    # Enter Code here
-    # TODO
-    raise NotImplementedError
+    years = [2019, 2020, 2021]
+    regional_counts_yearly = []
+    for y, df in enumerate(dfs):
+        top_100 = df[df['rank'] <= 100]
+
+        regional_counts = top_100.groupby('region').size()
+        
+        print(f"Top 100 universities by region in {years[y]}:")
+        print(regional_counts)
+
+        regional_counts_yearly.append(regional_counts)
+
     # Remember to return the count here
+    return regional_counts_yearly[2]["USA"]
 
 """
 8b.
 Do you notice some trend? Comment on what you observe and why might that be consistent throughout the years.
 
 === ANSWER Q8b BELOW ===
-
+The United States has the most number of universities in the top 100, ~29-30, followed by
+the UK at ~18-19, and China ~11. There isn't a huge amount of deviation from the last years 
+ranking for most countries, since universities don't dranstically change their operations and 
+students populations very much from last year. 
 === END OF Q8b ANSWER ===
 """
 
@@ -427,10 +471,13 @@ The list should contain 5 elements.
 """
 
 def q9(dfs):
-    # Enter code here
-    # TODO
-    raise NotImplementedError
-    # Return the list here
+    attributes = ["academic reputation", "employer reputation", "faculty student", "citations per faculty", "overall score"]
+    averages = []
+    for col in dfs[2].columns:
+        if col in attributes:
+            averages.append(dfs[2][col].mean())
+
+    return averages
 
 """
 10.
@@ -443,10 +490,10 @@ Then in q10, print the first 5 rows of the avg_2021 dataframe.
 """
 
 def q10_helper(dfs):
-    # Enter code here
-    # TODO
-    # Placeholder for the avg_2021 dataframe
-    avg_2021 = pd.DataFrame()
+    # print(dfs[2].dtypes)
+    columns_to_avg = ['academic reputation', 'employer reputation', 'faculty student', 'citations per faculty', 'overall score']
+
+    avg_2021 = dfs[2].groupby('region')[columns_to_avg].mean()
     return avg_2021
 
 def q10(avg_2021):
@@ -457,9 +504,9 @@ def q10(avg_2021):
     As your answer, simply return the number of rows printed.
     (That is, return the integer 5)
     """
-    # Enter code here
-    raise NotImplementedError
-    # Return 5
+    print(avg_2021.head(5))
+    
+    return 5
 
 """
 ===== Questions 11-14: Exploring the avg_2021 dataframe =====
@@ -471,11 +518,14 @@ As your answer to this part, return the first row of the sorted dataframe.
 """
 
 def q11(avg_2021):
-    raise NotImplementedError
+    return avg_2021.sort_values('overall score', ascending=False).head(1)
+
 
 """
 12a.
-What do you observe from the table above? Which country tops the ranking?
+What do you observe from the table above? Which country tops the ranking? 
+
+    --> Singapore tops the ranking with an overall score of 91.8
 
 What is one country that went down in the rankings
 between 2019 and 2021?
@@ -495,9 +545,32 @@ For the answer to this part return the name of the country/region that tops the 
 and the name of one country/region that went down in the rankings.
 """
 
-def q12a(avg_2021):
-    raise NotImplementedError
-    return ("TODO", "TODO")
+def q12_helper(dfs):
+    # print(dfs[0].dtypes)
+    columns_to_avg = ['academic reputation', 'employer reputation', 'faculty student', 'citations per faculty', 'overall score']
+
+    avg_2019 = dfs[0].groupby('region')[columns_to_avg].mean()
+    return avg_2019
+
+def q12a(avg_2021, avg_2019):
+    sorted_2021 = avg_2021.sort_values('overall score', ascending=False)
+    top_country_2021 = sorted_2021.index[0]  # First row's index (country name)
+
+    sorted_2019 = avg_2019.sort_values('overall score', ascending=False)
+    
+    list_2019 = list(sorted_2019.index)
+    list_2021 = list(sorted_2021.index)
+    # print(list_2019)
+    # print(list_2021)
+    
+    # Find countries that went down
+    dropped_countries = []
+    for country in list_2019:
+        if country in list_2021:
+            if list_2021.index(country) > list_2019.index(country): # compare the index, if it is lower than 
+                dropped_countries.append(country)
+    
+    return (top_country_2021, dropped_countries[0])
 
 """
 12b.
@@ -505,7 +578,10 @@ Comment on why the country above is at the top of the list.
 (Note: This is an open-ended question.)
 
 === ANSWER Q12b BELOW ===
-
+Singapore is at the top of the Rankings maybe because they have strong education funding, 
+facilitating research and development, highly skilled graduates and an overall boost to the 
+economy of singapore. Also the fact that Singapore is a small country with not that many 
+universites that could potentially bring the rankings down. 
 === END OF Q12b ANSWER ===
 """
 
@@ -524,16 +600,29 @@ import matplotlib.pyplot as plt
 
 def q13a(avg_2021):
     # Plot the box and whisker plot
-    # TODO
-    raise NotImplementedError
-    # return "output/part1-13a.png"
+    plt.figure(figsize=(12, 8))
+    
+    # Create box plot for all attributes
+    avg_2021.boxplot()
+    
+    # Add labels and title
+    plt.title('Box Plot of University Rankings by Evaluation Metrics (2021)')
+    plt.xlabel('Attributes')
+    plt.ylabel('Scores')    
+
+    plt.savefig('output/part1-13a.png')
+    plt.close()
+    
+    return "output/part1-13a.png"
 
 """
 b. Do you observe any anomalies in the box and whisker
 plot?
 
 === ANSWER Q13b BELOW ===
-
+The range of the overall score is much narrower than the other attributes, 
+due to the averaging nature of the overall score. Also, there is an outlier
+in the overall score plot, which I'm thinking is Singapore. 
 === END OF Q13b ANSWER ===
 """
 
@@ -549,15 +638,27 @@ As the answer to this part, return the name of the plot you saved.
 
 def q14a(avg_2021):
     # Enter code here
-    # TODO
-    raise NotImplementedError
-    # return "output/part1-14a.png"
+    plt.figure(figsize=(12, 8))
+    
+    # Create scatter plot for employer reputation and overall score
+    plt.scatter(avg_2021['employer reputation'], avg_2021['overall score'])
+    
+    # Add labels and title
+    plt.title('Scatter Plot of Employer Reputation vs Overall Score')
+    plt.xlabel('Employer Reputation')
+    plt.ylabel('Overall Score')    
+
+    plt.savefig('output/part1-14a.png')
+    plt.close()
+    
+    return "output/part1-14a.png"
 
 """
 Do you observe any general trend?
 
 === ANSWER Q14b BELOW ===
-
+Yes, roughly, as employer reputation increases, so does the overall score,
+but it is a weak correlation and needs further regression analysis.
 === END OF Q14b ANSWER ===
 
 ===== Questions 15-20: Exploring the data further =====
@@ -811,7 +912,9 @@ def PART_1_PIPELINE():
 
     # Questions 11-15
     log_answer("q11", q11, avg_2021)
-    log_answer("q12", q12a, avg_2021)
+
+    avg_2019 = q12_helper(dfs)
+    log_answer("q12", q12a, avg_2021, avg_2019)
     # 12b: commentary
     log_answer("q13", q13a, avg_2021)
     # 13b: commentary
