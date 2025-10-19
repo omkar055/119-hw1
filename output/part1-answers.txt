@@ -1,7 +1,7 @@
 q1,3
 q2,True
 q3a,False
-q4,['Duke University', 'University of Bristol', 'University of California, San Diego (UCSD)', 'Carnegie Mellon University', 'University of Copenhagen']
+q4,['Columbia University', 'University of Birmingham', 'University of Illinois at Urbana-Champaign', 'University of Oxford', 'The University of Sydney']
 q5a,[100, 100, 100, 100, 100, 100, 100, 100]
 q5b,[100, 100, 100, 100, 100, 100, 100, 100]
 q5c,100
@@ -18,11 +18,11 @@ Singapore                82.25  ...           91.8
 q12,('Singapore', 'South Korea')
 q13,output/part1-13a.png
 q14a,output/part1-14a.png
-q15,Not Implemented
-q16,Not Implemented
-q17,Not Implemented
-q18,Not Implemented
-q20a,Not Implemented
-q20b,Not Implemented
-q21,Not Implemented
-PART 1,7
+q15,(10, 4)
+q16,['university', 'overall score 2019', 'overall score 2020', 'overall score 2021']
+q17,output/part1-17a.png
+q18,output/part1-18.png
+q20a,101.0
+q20b,['University of California, Berkeley (UCB)', 'Massachusetts Institute of Technology (MIT)', 'Stanford University', 'California Institute of Technology (Caltech)', 'ETH Zurich - Swiss Federal Institute of Technology', 'Harvard University', 'Cornell University', 'Princeton University', 'University of Oxford', 'The Australian National University']
+q21,['University of California, Berkeley (UCB)', 'Massachusetts Institute of Technology (MIT)', 'Stanford University', 'Harvard University', 'University of Oxford', 'California Institute of Technology (Caltech)', 'ETH Zurich - Swiss Federal Institute of Technology', 'University of Cambridge', 'UCL', 'Imperial College London']
+PART 1,0

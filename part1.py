@@ -680,16 +680,19 @@ As your answer, return the shape of the new dataframe.
 """
 
 def q15_helper(dfs):
-    # Return the new dataframe
-    # TODO
-    # Placeholder:
-    top_10 = pd.DataFrame()
+    top_10_2019 = dfs[0].head(10)[['university', 'overall score']].copy()
+    top_10_2020 = dfs[1].head(10)[['university', 'overall score']].copy()
+    top_10_2021 = dfs[2].head(10)[['university', 'overall score']].copy()
+    
+    # Merge the dataframes on university name
+    top_10 = top_10_2019.merge(top_10_2020, on='university').merge(top_10_2021, on='university')
+
     return top_10
 
 def q15(top_10):
-    # Enter code here
-    # TODO
-    raise NotImplementedError
+    # return top_10 shape
+    # print(top_10.head())
+    return top_10.shape
 
 """
 16.
@@ -703,10 +706,11 @@ As your answer, return the new column names as a list.
 """
 
 def q16(top_10):
-    # Enter code here
-    # TODO
-    raise NotImplementedError
-    # return list(df.columns)
+    # Rename the columns to be more descriptive
+    top_10.columns = ['university', 'overall score 2019', 'overall score 2020', 'overall score 2021']
+    
+    # Return the new column names as a list
+    return list(top_10.columns)
 
 """
 17a.
@@ -722,17 +726,44 @@ Note:
 """
 
 def q17a(top_10):
-    # Enter code here
-    # TODO
-    raise NotImplementedError
-    # return "output/part1-17a.png"
+    # choosing a line graph to see the trend of the overall scores for all universities across the years on a single plot
+
+    plt.figure(figsize = (12, 8))
+
+    for i in range(len(top_10)):
+        uni_name = top_10.iloc[i]['university']
+
+        scores = [
+            top_10.iloc[i]['overall score 2019'],
+            top_10.iloc[i]['overall score 2020'],
+            top_10.iloc[i]['overall score 2021']
+        ]
+
+        years = [2019, 2020, 2021]
+        plt.plot(years, scores, label=uni_name)
+
+    plt.xlabel('Year')
+    plt.ylabel('Overall Score of University')
+    plt.title('Overall Score Trend of Top 10 Universities from 2019-2021')
+
+    # Legend
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=9)
+    plt.tight_layout()
+    
+    # Save the plot
+    plt.savefig('output/part1-17a.png')
+    plt.close()
+
+
+    return "output/part1-17a.png"
 
 """
 17b.
 What do you observe from the plot above? Which university has remained consistent in their scores? Which have increased/decreased over the years?
 
 === ANSWER Q17b BELOW ===
-
+MIT it consistently scoring the highest and is at the top with a score of 100, Stanford has more or less been consistent, dropping just a bit. 
+Oxford, ETH Zurich and UCL have all climbed up in scores, whereas Caltech, Cambridge, UChicago and Harvard have dropped in overall scores.
 === END OF Q17b ANSWER ===
 """
 
@@ -743,7 +774,8 @@ We're almost done!
 
 Let's look at another useful tool to get an idea about how different variables are corelated to each other. We call it a **correlation matrix**
 
-A correlation matrix provides a correlation coefficient (a number between -1 and 1) that tells how strongly two variables are correlated. Values closer to -1 mean strong negative correlation whereas values closer to 1 mean strong positve correlation. Values closer to 0 show variables having no or little correlation.
+A correlation matrix provides a correlation coefficient (a number between -1 and 1) that tells how strongly two variables are correlated. Values closer to -1 mean strong negative correlation whereas values closer to 1 mean strong positve correlation. 
+Values closer to 0 show variables having no or little correlation.
 
 You can learn more about correlation matrices from here: https://www.statology.org/how-to-read-a-correlation-matrix/
 
@@ -758,17 +790,34 @@ As the answer to this part, return the name of the plot you saved.
 """
 
 def q18(dfs):
-    # Enter code here
-    # TODO
-    raise NotImplementedError
-    # return "output/part1-18.png"
+    numeric_columns = ['academic reputation', 'employer reputation', 'faculty student', 'citations per faculty', 'overall score']
+    
+    corr_matrix = dfs[2][numeric_columns].corr()
+
+    plt.figure(figsize=(12, 8))
+    plt.imshow(corr_matrix, cmap='coolwarm', interpolation='none')
+    plt.colorbar(label='Correlation Coefficient')
+
+    plt.xticks(range(len(numeric_columns)), numeric_columns, rotation=45, ha='right')
+    plt.yticks(range(len(numeric_columns)), numeric_columns)
+    plt.title('Correlation Matrix of University Ranking\`s Numeric Attributes (2021)')
+
+    plt.tight_layout()
+
+    plt.savefig("output/part1-18.png")
+    plt.close()
+
+
+    return "output/part1-18.png"
 
 """
 19. Comment on at least one entry in the matrix you obtained in the previous
 part that you found surprising or interesting.
 
 === ANSWER Q19 BELOW ===
-
+Citations per faculty and the overall score seem to be somewhat strong and positively correlated, which is interesting because
+more citations could mean stronger academic research being a leading indicator for university reputation and rankings.
+We can see this at UC Berkeley, with some faculty winning the Nobel Prize for their research and citations. 
 === END OF Q19 ANSWER ===
 """
 
@@ -805,14 +854,32 @@ Use your new column to sort the data by the new values and return the top 10 uni
 """
 
 def q20a(dfs):
-    # TODO
-    raise NotImplementedError
-    # For your answer, return the score for Berkeley in the new column.
+    print(dfs[2].columns)
+    berkeley_df_2021 = dfs[2].copy()
+
+    berkeley_df_2021['totally legit ranking'] = (
+        berkeley_df_2021['citations per faculty'] * 0.5 +
+        berkeley_df_2021['academic reputation'] * 0.35 +
+        berkeley_df_2021['faculty student'] * 0.15
+    )
+
+    berkeley_index = berkeley_df_2021['university'].str.contains('Berkeley')
+    berkeley_totally_legit_ranking = berkeley_df_2021.loc[berkeley_index, 'totally legit ranking'].iloc[0]
+
+    berkeley_df_2021.loc[berkeley_index, 'totally legit ranking'] += (101 - berkeley_totally_legit_ranking)
+
+    dfs[2] = berkeley_df_2021
+        
+    # For your answer, return the score for Berkeley in the new column
+    berkeley_score = berkeley_df_2021.loc[berkeley_df_2021['university'].str.contains('Berkeley'), 'totally legit ranking'].values[0]
+
+    return berkeley_score
 
 def q20b(dfs):
-    # TODO
-    raise NotImplementedError
-    # For your answer, return the top 10 university names as a list.
+    berkeley_df_2021_sorted = dfs[2].sort_values('totally legit ranking', ascending=False)
+    
+    # For your answer, return the top 10 university names as a list
+    return berkeley_df_2021_sorted.head(10)['university'].tolist()
 
 """
 21. Exploring data manipulation and falsification, continued
@@ -831,8 +898,17 @@ Return the top 10 university names as a list from the falsified data.
 """
 
 def q21():
-    # TODO
-    raise NotImplementedError
+    df_2021_falsified = pd.read_csv('data/2021.csv', encoding='latin-1')
+    df_2021_falsified.columns = df_2021_falsified.columns.str.lower()
+    
+    berkeley_index = df_2021_falsified['university'].str.contains('Berkeley')
+    #same manipulation as q20a, set berkeley's overall score to 101 (above MIT's 100)
+    df_2021_falsified.loc[berkeley_index, 'overall score'] = 101
+
+    # save as csv
+    df_2021_falsified.to_csv('data/2021_falsified.csv', index = False)
+
+    return df_2021_falsified.sort_values('overall score', ascending=False).head(10)['university'].tolist()
 
 """
 22. Exploring data manipulation and falsification, continued
@@ -843,7 +919,10 @@ if you were a "bad actor" trying to manipulate the rankings?
 Which do you think would be the most difficult to detect?
 
 === ANSWER Q22 BELOW ===
-
+I think falsifying the data itself is more subtle if done better than what i did than changing the scoring formula
+because you can tweak certain metrics very subtly across different sources of information, which will overtime boost 
+a university's rankings compared to just hardcoding the data to be different as it can be tracked and compared to 
+the source data/ the original. 
 === END OF Q22 ANSWER ===
 """
 
