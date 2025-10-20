@@ -800,7 +800,7 @@ def q18(dfs):
 
     plt.xticks(range(len(numeric_columns)), numeric_columns, rotation=45, ha='right')
     plt.yticks(range(len(numeric_columns)), numeric_columns)
-    plt.title('Correlation Matrix of University Ranking\`s Numeric Attributes (2021)')
+    plt.title("Correlation Matrix of University Ranking`s Numeric Attributes (2021)")
 
     plt.tight_layout()
 
