@@ -142,7 +142,7 @@ def q2(dfs):
             return False
         if df.columns.tolist() != NEW_COLUMNS: # columns order checks
             return False
-    return True
+    return True 
 
 
 """
@@ -184,10 +184,10 @@ def q3(dfs):
     # - that the set of university names in each year is the same
     # Return:
     # - True if they are the same, and False otherwise.
-    universities_2019 = set(dfs[0]['university'])
+    universities_2019 = set(dfs[0]['university'])  # get only 2019 universities
 
-    for df in dfs[1:]:
-        if set(df['university']) != universities_2019:
+    for df in dfs[1:]: 
+        if set(df['university']) != universities_2019: # other dfs check against the set of 2019 universities
             return False
     
     return True 
@@ -238,10 +238,10 @@ Hint:
 def q4(dfs):
     # Sample 5 rows from each dataframe
     # Print out the samples
-    for i, df in enumerate(dfs):
+    for i, df in enumerate(dfs): # get index and the dataframe
         samples = df.sample(5)
-        if i == 2:
-            sample_universities = samples['university'].tolist()
+        if i == 2: 
+            sample_universities = samples['university'].tolist() # if 2021, return list of sample universities
 
     # Answer as a list of 5 university names
     return sample_universities
@@ -293,14 +293,14 @@ def q5a(dfs):
     # (Since .info() does not return any values,
     # for this part, you will need to copy and paste
     # the output as a hardcoded list.)
-    return [100, 100, 100, 100, 100, 100, 100, 100]
+    return [100, 100, 100, 100, 100, 100, 100, 100] # hardcoded
 
 
 def q5b(dfs):
     non_null_counts = []
 
     for col in dfs[2].columns:
-        non_null_counts.append(dfs[2][col].count())
+        non_null_counts.append(dfs[2][col].count()) # get all non_null values in each col
 
     # Remember to return the list here
     return non_null_counts
@@ -313,7 +313,7 @@ We will use this in the unit tests below.
 """
 
 def q5c():
-    # TODO: fill this in with the expected number
+    # fill this in with the expected number
     num_non_null = 100
     return num_non_null
 
@@ -418,7 +418,7 @@ def q7(dfs):
     years = [2019, 2020, 2021]
     num_columns = []
     for y, df in enumerate(dfs):
-        df["year"] = years[y]
+        df["year"] = years[y]    # append an 'year' column in each dataframe
         num_columns.append(len(df.columns))
 
     return num_columns 
@@ -434,17 +434,17 @@ As your answer, return the count for "USA" in 2021.
 def q8a(dfs):
     years = [2019, 2020, 2021]
     regional_counts_yearly = []
-    for y, df in enumerate(dfs):
+    for y, df in enumerate(dfs): # get the year and the dataframe
         top_100 = df[df['rank'] <= 100]
 
-        regional_counts = top_100.groupby('region').size()
+        regional_counts = top_100.groupby('region').size() # used groupby to group by regions and get regional counts for each
         
         print(f"Top 100 universities by region in {years[y]}:")
         print(regional_counts)
 
-        regional_counts_yearly.append(regional_counts)
+        regional_counts_yearly.append(regional_counts) # add to regional_counts_yearly
 
-    # Remember to return the count here
+    # return the count of universities from USA 
     return regional_counts_yearly[2]["USA"]
 
 """
@@ -475,7 +475,7 @@ def q9(dfs):
     averages = []
     for col in dfs[2].columns:
         if col in attributes:
-            averages.append(dfs[2][col].mean())
+            averages.append(dfs[2][col].mean())   # append the average score of all attributes for all universities
 
     return averages
 
@@ -493,7 +493,7 @@ def q10_helper(dfs):
     # print(dfs[2].dtypes)
     columns_to_avg = ['academic reputation', 'employer reputation', 'faculty student', 'citations per faculty', 'overall score']
 
-    avg_2021 = dfs[2].groupby('region')[columns_to_avg].mean()
+    avg_2021 = dfs[2].groupby('region')[columns_to_avg].mean() # group by region to find averageof attributes
     return avg_2021
 
 def q10(avg_2021):

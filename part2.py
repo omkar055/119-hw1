@@ -38,7 +38,7 @@ Fill in the add_pipeline, eval_throughput, and generate_plot functions below.
 # Number of times to run each pipeline in the following results.
 # You may modify this as you go through the file if you like, but make sure
 # you set it back to 10 at the end before you submit.
-NUM_RUNS = 1
+NUM_RUNS = 10
 
 class ThroughputHelper:
     def __init__(self):
@@ -875,7 +875,7 @@ This is an open ended question.)
 
 ===== ANSWER Q17 BELOW =====
 Throughput = items/time, Latency = time/item. The relationship looks inverse to me, i.e. as throughput
-increases, latency should decrease generally.
+increases, latency should decrease.
 ===== END OF Q17 ANSWER =====
 """
 

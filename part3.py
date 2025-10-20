@@ -41,6 +41,8 @@ get uploaded when you submit.
 
 # You may need to conda install requests or pip3 install requests
 import requests
+import subprocess
+import os
 
 def download_file(url, filename):
     r = requests.get(url)
@@ -48,25 +50,42 @@ def download_file(url, filename):
         f.write(r.content)
 
 def clone_repo(repo_url):
-    # TODO
-    raise NotImplementedError
+    repo_name = repo_url.rstrip('/').split('/')[-1]
+
+    if os.path.exists(repo_name):
+        print("Repo already exists, skipping clone.")
+        return
+    subprocess.run(['git', 'clone', repo_url], check=True)
+
 
 def run_script(script_path, data_path):
-    # TODO
-    raise NotImplementedError
+    subprocess.run(["python3", script_path, data_path], check=True)
+
 
 def setup(repo_url, data_url, script_path):
-    # TODO
-    raise NotImplementedError
+    data_file = "input_data.txt"
+    download_file(data_url, data_file)
+    
+    # Clone the repo
+    clone_repo(repo_url)
+    
+    # Run the script
+    run_script(script_path, data_file)
+
 
 def q1():
     # Call setup as described in the prompt
-    # TODO
+    setup(
+        "https://github.com/DavisPL-Teaching/119-hw1",
+        "https://raw.githubusercontent.com/DavisPL-Teaching/119-hw1/refs/heads/main/data/test-input.txt",
+        "test-script.py"
+    )
     # Read the file test-output.txt to a string
-    # TODO
+    with open("output/test-output.txt") as f:
     # Return the integer value of the output
-    # TODO
-    raise NotImplementedError
+        output = int(f.read().strip())
+    
+    return output
 
 """
 2.
@@ -78,13 +97,15 @@ a. When might you need to use a script like setup() above in
 this scenario?
 
 === ANSWER Q2a BELOW ===
-
+Scripts will be useful when automating data pipelines that I want to run more than once like in our case,
+which ensuring reproducibility and avoids redundancy across the team, making the results consistent for everyone.
 === END OF Q2a ANSWER ===
 
 Do you see an alternative to using a script like setup()?
 
 === ANSWER Q2b BELOW ===
-
+Yeah, I know some technologies exist like Docker, Kuberneties, Cloud, that can help with managing 
+consistency and accuracy of environments across various different machines.
 === END OF Q2b ANSWER ===
 
 3.
@@ -125,16 +146,36 @@ any packages?
 """
 
 def setup_for_new_machine():
-    # TODO
-    raise NotImplementedError
+    py_packages_needed = [
+        'pandas',        
+        'matplotlib', 
+        'math',
+        'time',            
+        'requests',
+        'subprocess',
+        'os'
+    ]
+    
+    # Install packages using pip3
+    for package in py_packages_needed:
+        print(f"Installing {package}...")
+        result = subprocess.run(['conda', 'install', package], 
+                              capture_output=True, text=True)
+    
+    # Create necessary directories
+    directories = ['output', 'data']
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            print(f"Creating directory: {directory}")
+    
+
 
 def q3():
     # As your answer, return a string containing
     # the operating system name that you assumed the
     # new machine to have.
-    # TODO
-    raise NotImplementedError
-    # os =
+    os = 'MacOS'
     return os
 
 """
@@ -147,7 +188,9 @@ scripts like setup() and setup_for_new_machine()
 in their day-to-day jobs?
 
 === ANSWER Q4 BELOW ===
-
+I think maybe around 25% of the time because while scripting is importing, I think data scientists focus
+more on modelling, fine-tuning and analyzing to derive insights from the data. This seems something Data
+Engineers might be doing more often. 
 === END OF Q4 ANSWER ===
 
 5.
@@ -164,7 +207,9 @@ If you don't have a friend's machine, please speculate about
 what might happen if you tried. You can guess.
 
 === ANSWER Q5 BELOW ===
-
+I didn't check with a friend but I think Q3 should work if my friend has conda, has a similar machine (OS and architecture)
+as long as he has no permission issues or shell issues and a directory set up to run the script so that appropriate 
+sub-directories are made.
 === END OF Q5 ANSWER ===
 
 ===== Questions 6-9: A comparison of shell vs. Python =====
@@ -221,20 +266,27 @@ with:
 """
 
 def pipeline_shell():
-    # TODO
-    raise NotImplementedError
-    # Return resulting integer
+    command = "cat data/population.csv | tail -n +2 | wc -l"
+    result = os.popen(command).read().strip()
+    return int(result)
 
 def pipeline_pandas():
-    # TODO
-    raise NotImplementedError
-    # Return resulting integer
+    df = pd.read_csv('data/population.csv')
+    return len(df)
 
 def q6():
     # As your answer to this part, check that both
     # integers are the same and return one of them.
-    # TODO
-    raise NotImplementedError
+    shell = pipeline_shell()
+    pandas = pipeline_pandas()
+    
+    # Verify they're the same
+    if (shell == pandas): 
+        print("Counts match")
+    else:
+        print("Counts don't match")
+    
+    return shell
 
 """
 Let's do a performance comparison between the two methods.
@@ -252,8 +304,17 @@ def q7():
     # Return a list of two floats
     # [throughput for shell, throughput for pandas]
     # (in rows per second)
-    # TODO
-    raise NotImplementedError
+    # Get the row count for throughput calculation
+    row_count = q6()
+    
+    t = part2.ThroughputHelper()
+    t.add_pipeline('shell', row_count, pipeline_shell)
+    t.add_pipeline('pandas', row_count, pipeline_pandas)
+    
+    throughputs = t.compare_throughput()
+    t.generate_plot('output/part3-q7.png')
+    
+    return throughputs
 
 """
 8. Latency
@@ -271,15 +332,24 @@ def q8():
     # Return a list of two floats
     # [latency for shell, latency for pandas]
     # (in milliseconds)
-    # TODO
-    raise NotImplementedError
+    l = part2.LatencyHelper()
+
+    l.add_pipeline('shell', pipeline_shell)
+    l.add_pipeline('pandas', pipeline_pandas)
+    
+    latencies = l.compare_latency()
+    l.generate_plot('output/part3-q8.png')
+    
+    return latencies
 
 """
 9. Which method is faster?
 Comment on anything else you notice below.
 
 === ANSWER Q9 BELOW ===
-
+Pandas is much faster in terms of both Throughput and Latency because I'm assuming shell commands through
+os.popen() or subprocess have a lot of setting up in the background, slowing the process, as well as more
+functions/commands used in shell compared to just len in pandas.
 === END OF Q9 ANSWER ===
 """
 
